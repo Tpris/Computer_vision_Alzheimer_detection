@@ -1,0 +1,19 @@
+1: Subject ID     
+2: Rooster ID (Truc d’ADNI, correspond au 4 dernier chiffres du subject ID)
+3: Age
+4: Sexe (0=female, 1=male)
+5: Group (CN, EMCI, LMCI, AD)
+6: Conversion (-1: CN/AD at baseline, 1=16 month, 2=24month, 3=36month, 4= sMCI/pas de conversion a 36 mois, 5=inconnue)
+7: MMSE
+8: RAVLT
+9: FAQ
+10: CDR-SB
+11: ADAS11
+12: ADAS13
+
+
+Du coup pour séparer les sMCI et les pMCI une fois que t’as chargé la colonne des conversion tu peut faire:
+id = find(conversion==1 | conversion==2 | conversion==3 | conversion==4); 
+pMCI = (conversion(id)'~=4); 
+sMCI = (conversion(id)'==4); 
+
