@@ -17,3 +17,4 @@ id = find(conversion==1 | conversion==2 | conversion==3 | conversion==4);
 pMCI = (conversion(id)'~=4); 
 sMCI = (conversion(id)'==4); 
 
+https://theses.hal.science/tel-03191293v1/document
