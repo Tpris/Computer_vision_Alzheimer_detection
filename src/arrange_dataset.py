@@ -2,6 +2,7 @@ import sys
 import os
 import csv
 import numpy as np
+import splitfolders
 
 
 def rename_files(data_dir, data_info, dict):
@@ -34,6 +35,38 @@ def get_path_from_ID(ID, data_dir):
     path = data_dir + "n_mmni_fADNI_" + ID + "_1.5T_t1w.nii.gz"
     mask_path = data_dir + "mask_n_mmni_fADNI_" + ID + "_1.5T_t1w.nii.gz"
     return path, mask_path
+
+
+def arrange_dataset():
+    if not os.path.exists("./lib/AD"):
+        os.mkdir("./lib/AD")
+        print("Created directory ./lib/AD")
+    if not os.path.exists("./lib/CN"):
+        os.mkdir("./lib/CN")
+        print("Created directory ./lib/CN")
+    if not os.path.exists("./lib/PMCI"):
+        os.mkdir("./lib/PMCI")
+        print("Created directory ./lib/PMCI")
+    if not os.path.exists("./lib/SMCI"):
+        os.mkdir("./lib/SMCI")
+        print("Created directory ./lib/SMCI")
+    for file in os.listdir("./lib"):
+        if file.endswith(".nii.gz") and not file.endswith("-mask.nii.gz"):
+            if file.startswith("AD"):
+                os.rename("./lib/"+file, "./lib/AD/"+file)
+            elif file.startswith("CN"):
+                os.rename("./lib/"+file, "./lib/CN/"+file)
+            elif file.startswith("PMCI"):
+                os.rename("./lib/"+file, "./lib/PMCI/"+file)
+            elif file.startswith("SMCI"):
+                os.rename("./lib/"+file, "./lib/SMCI/"+file)
+
+    if not os.path.exists("./data"):
+        splitfolders.ratio('./lib', output="./data", seed=1337, ratio=(.8, .2), group_prefix=None)
+        print("Split dataset into train and val sets")
+    
+    print("Dataset arranged in ./data")
+    return "./data"
 
 
 if __name__ == '__main__':
