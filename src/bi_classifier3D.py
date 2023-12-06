@@ -1,6 +1,6 @@
 import tensorflow as tf
 from tensorflow.keras.initializers import RandomUniform
-from tensorflow.keras.layers import concatenate, Input, Activation, Add, Conv3D, MaxPooling3D, Dropout, Flatten, Dense
+from tensorflow.keras.layers import Input, Activation, Add, Conv3D, MaxPooling3D, Dropout, Flatten, Dense
 from tensorflow.keras.models import Model
 
 

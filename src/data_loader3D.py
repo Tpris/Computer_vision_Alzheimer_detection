@@ -3,14 +3,15 @@ from keras.utils import Sequence
 import numpy as np
 import nibabel as nib
 
-def dataGenerator(data_dir, mode="train"):
+def dataGenerator(data_dir, mode="train", nb_classes=4):
     set = []
     labels = []
     path = os.path.join(data_dir, mode)
     AD = os.path.join(path, "AD")
     CN = os.path.join(path, "CN")
-    PMCI = os.path.join(path, "PMCI")
-    SMCI = os.path.join(path, "SMCI")
+    if nb_classes == 4:
+        PMCI = os.path.join(path, "PMCI")
+        SMCI = os.path.join(path, "SMCI")
     for file in os.listdir(AD):
         if file.endswith(".nii.gz") and not file.endswith("-mask.nii.gz"):
             set.append(os.path.join(AD, file))
@@ -19,14 +20,15 @@ def dataGenerator(data_dir, mode="train"):
         if file.endswith(".nii.gz") and not file.endswith("-mask.nii.gz"):
             set.append(os.path.join(CN, file))
             labels.append(1)
-    for file in os.listdir(PMCI):
-        if file.endswith(".nii.gz") and not file.endswith("-mask.nii.gz"):
-            set.append(os.path.join(PMCI, file))
-            labels.append(2)
-    for file in os.listdir(SMCI):
-        if file.endswith(".nii.gz") and not file.endswith("-mask.nii.gz"):
-            set.append(os.path.join(SMCI, file))
-            labels.append(3)
+    if nb_classes == 4:
+        for file in os.listdir(PMCI):
+            if file.endswith(".nii.gz") and not file.endswith("-mask.nii.gz"):
+                set.append(os.path.join(PMCI, file))
+                labels.append(2)
+        for file in os.listdir(SMCI):
+            if file.endswith(".nii.gz") and not file.endswith("-mask.nii.gz"):
+                set.append(os.path.join(SMCI, file))
+                labels.append(3)
 
     return set, labels
 
@@ -69,8 +71,8 @@ class NiiSequence(Sequence):
         class_name = os.path.basename(os.path.dirname(file_path))
         if self.nb_classes == 4:
             label = {"AD": 0, "CN": 1, "PMCI": 2, "SMCI": 3}[class_name]
-        elif self.nb_classes == 2: #we consider AD and pMCI as AD and CN and sMCI as CN
-            label = {"AD": 0, "CN": 1, "PMCI": 0, "SMCI": 1}[class_name]
+        elif self.nb_classes == 2:
+            label = {"AD": 0, "CN": 1}[class_name]
         return label
 
     def load_and_preprocess(self, file_path):
