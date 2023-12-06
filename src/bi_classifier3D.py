@@ -1,8 +1,8 @@
 import tensorflow as tf
 from tensorflow.keras.initializers import RandomUniform
-from tensorflow.keras.layers import Input, Activation, Add, Conv3D, MaxPooling3D, Dropout, Flatten, Dense
+from tensorflow.keras.layers import Input, Activation, Add, Conv3D, MaxPooling3D, Dropout, Flatten, Dense, BatchNormalization
 from tensorflow.keras.models import Model
-
+from tensorflow.keras import activations
 
 class Biclassifier3D():
 
@@ -39,7 +39,9 @@ class Biclassifier3D():
         x = Dense(64, activation='relu')(x)
         x = Dropout(self.dropout)(x)
         #output layer
-        output = Dense(self.n_classes, activation='softmax')(x)
+        output = Dense(self.n_classes)(x)
+        output = BatchNormalization(momentum=0.1, epsilon=1e-05)(output)
+        output = Activation(activations.softmax)(output)
         model = Model(inputs=input, outputs=output)
         return model
 
