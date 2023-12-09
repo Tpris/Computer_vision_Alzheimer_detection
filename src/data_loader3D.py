@@ -2,6 +2,8 @@ import os
 from keras.utils import Sequence
 import numpy as np
 import nibabel as nib
+from dltk.io.augmentation import *
+from dltk.io.preprocessing import *
 
 def dataGenerator(data_dir, mode="train", nb_classes=4):
     set = []
@@ -43,7 +45,7 @@ def dim_augmentation(data):
     return data
 
 class NiiSequence(Sequence):
-    def __init__(self, file_paths, batch_size, nb_classes=4, mode="full", shuffle=True):
+    def __init__(self, file_paths, batch_size, nb_classes=4, mode="full", shuffle=True, data_aug=False):
         assert mode in ["full", "HC", "reduced"], "mode must be either 'full', 'HC' or 'reduced'"
         assert nb_classes in [2, 4], "nb_classes must be either 2 or 4"
         self.file_paths = file_paths
@@ -52,6 +54,7 @@ class NiiSequence(Sequence):
         self.batch_size = batch_size
         self.nb_classes = nb_classes
         self.mode = mode
+        self.data_aug = data_aug
 
     def __len__(self):
         return int(np.ceil(len(self.file_paths) / self.batch_size))
@@ -64,6 +67,10 @@ class NiiSequence(Sequence):
 
         batch_labels = [self.extract_label(path) for path in batch_paths]
         batch_labels = np.eye(self.nb_classes)[batch_labels]
+
+        if self.data_aug:
+            batch_data = add_gaussian_offset(batch_data, sigma=0.5)
+
 
         return batch_data, batch_labels
         
