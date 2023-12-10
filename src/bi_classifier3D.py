@@ -20,15 +20,17 @@ class Biclassifier3D():
         input = Input(shape=self.input_shape)
         x = input
         x = Conv3D(self.n_filters, self.kernel_size, padding='same', kernel_initializer=self.initializer)(x)
+        x = BatchNormalization(momentum=0.5, epsilon=1)(x)
         x = Activation(self.activation)(x)
         x = Conv3D(self.n_filters, self.kernel_size, padding='same', kernel_initializer=self.initializer)(x)
         x = Activation(self.activation)(x)
         #maxpooling
         x = MaxPooling3D()(x)
         #dropout
-        x = Dropout(self.dropout)(x)
+        # x = Dropout(self.dropout)(x)
         #2nd conv layer
         x = Conv3D(self.n_filters*2, self.kernel_size, padding='same', kernel_initializer=self.initializer)(x)
+        x = BatchNormalization(momentum=0.5, epsilon=1)(x)
         x = Activation(self.activation)(x)
         x = Conv3D(self.n_filters*2, self.kernel_size, padding='same', kernel_initializer=self.initializer)(x)
         x = Activation(self.activation)(x)
@@ -37,11 +39,14 @@ class Biclassifier3D():
 
         #dense layer
         x = Flatten()(x)
-        x = Dense(128, activation='relu')(x)
+        # x = Dense(128, activation='relu')(x)
+        x = Dense(128)(x)
+        x = BatchNormalization(momentum=0.5, epsilon=1)(x)
+        x = Activation(self.activation)(x)
         x = Dense(64, activation='relu')(x)
         #output layer
         output = Dense(self.n_classes)(x)
-        output = BatchNormalization(momentum=0.1, epsilon=1e-05)(output)
+        # output = BatchNormalization(momentum=0.1, epsilon=1e-05)(output)
         output = Activation(activations.softmax)(output)
         model = Model(inputs=input, outputs=output)
         return model

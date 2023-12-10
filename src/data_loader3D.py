@@ -4,6 +4,7 @@ import numpy as np
 import nibabel as nib
 from dltk.io.augmentation import *
 from dltk.io.preprocessing import *
+import random
 
 def dataGenerator(data_dir, mode="train", nb_classes=4):
     set = []
@@ -60,6 +61,22 @@ class NiiSequence(Sequence):
         return int(np.ceil(len(self.file_paths) / self.batch_size))
 
     def __getitem__(self, idx):
+        batch_data, batch_labels = self.simplegetitem(idx)
+
+        if not self.data_aug:
+            return batch_data, batch_labels
+        
+        num_aug = random.randint(0,2)
+        match num_aug:
+            case 1:
+                batch_data = add_gaussian_offset(batch_data.copy(), sigma=25)
+            case 2:
+                batch_data = add_gaussian_noise(batch_data.copy(), sigma=25)
+
+
+        return batch_data, batch_labels
+
+    def simplegetitem(self, idx):
         batch_paths = self.file_paths[idx * self.batch_size:(idx + 1) * self.batch_size]
 
         batch_data = [self.load_and_preprocess(path) for path in batch_paths]
@@ -67,10 +84,6 @@ class NiiSequence(Sequence):
 
         batch_labels = [self.extract_label(path) for path in batch_paths]
         batch_labels = np.eye(self.nb_classes)[batch_labels]
-
-        if self.data_aug:
-            batch_data = add_gaussian_offset(batch_data, sigma=0.5)
-
 
         return batch_data, batch_labels
         
