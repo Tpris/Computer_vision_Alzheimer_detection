@@ -90,9 +90,9 @@ class NiiSequence(Sequence):
     def extract_label(self, file_path):
         class_name = os.path.basename(os.path.dirname(file_path))
         if self.nb_classes == 4:
-            label = {"AD": 0, "CN": 1, "PMCI": 2, "SMCI": 3}[class_name]
+            label = {"CN": 0, "SMCI": 1, "PMCI": 2, "AD": 3}[class_name]
         elif self.nb_classes == 2:
-            label = {"AD": 0, "CN": 1}[class_name]
+            label = {"CN": 0, "AD": 1}[class_name]
         return label
 
     def load_and_preprocess(self, file_path):
