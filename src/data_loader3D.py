@@ -15,24 +15,31 @@ def dataGenerator(data_dir, mode="train", nb_classes=4):
     if nb_classes == 4:
         PMCI = os.path.join(path, "PMCI")
         SMCI = os.path.join(path, "SMCI")
-    for file in os.listdir(AD):
-        if file.endswith(".nii.gz") and not file.endswith("-mask.nii.gz"):
-            set.append(os.path.join(AD, file))
-            labels.append(0)
-    for file in os.listdir(CN):
-        if file.endswith(".nii.gz") and not file.endswith("-mask.nii.gz"):
-            set.append(os.path.join(CN, file))
-            labels.append(1)
-    if nb_classes == 4:
+        for file in os.listdir(CN):
+            if file.endswith(".nii.gz") and not file.endswith("-mask.nii.gz"):
+                set.append(os.path.join(CN, file))
+                labels.append(0)
+        for file in os.listdir(SMCI):
+            if file.endswith(".nii.gz") and not file.endswith("-mask.nii.gz"):
+                set.append(os.path.join(SMCI, file))
+                labels.append(1)
         for file in os.listdir(PMCI):
             if file.endswith(".nii.gz") and not file.endswith("-mask.nii.gz"):
                 set.append(os.path.join(PMCI, file))
                 labels.append(2)
-        for file in os.listdir(SMCI):
+        for file in os.listdir(AD):
             if file.endswith(".nii.gz") and not file.endswith("-mask.nii.gz"):
-                set.append(os.path.join(SMCI, file))
+                set.append(os.path.join(AD, file))
                 labels.append(3)
-
+    else:
+        for file in os.listdir(CN):
+            if file.endswith(".nii.gz") and not file.endswith("-mask.nii.gz"):
+                set.append(os.path.join(CN, file))
+                labels.append(0)
+        for file in os.listdir(AD):
+            if file.endswith(".nii.gz") and not file.endswith("-mask.nii.gz"):
+                set.append(os.path.join(AD, file))
+                labels.append(1)
     return set, labels
 
 
