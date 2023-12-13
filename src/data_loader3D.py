@@ -55,12 +55,16 @@ def dim_augmentation(data):
 class NiiSequence(Sequence):
     def __init__(self, file_paths, batch_size, nb_classes=4, mode="full", shuffle=True, data_aug=False):
         assert mode in ["full", "HC", "reduced"], "mode must be either 'full', 'HC' or 'reduced'"
-        assert nb_classes in [2, 4], "nb_classes must be either 2 or 4"
+        assert nb_classes in [2, 4, 2.2], "nb_classes must be either 2, 4 or 2.2"
         self.file_paths = file_paths
         if shuffle:
             np.random.shuffle(self.file_paths)
         self.batch_size = batch_size
         self.nb_classes = nb_classes
+        self.use_SP = False
+        if self.nb_classes == 2.2:
+            self.nb_classes = 2
+            self.use_SP = True
         self.mode = mode
         self.data_aug = data_aug
 
@@ -98,6 +102,8 @@ class NiiSequence(Sequence):
         class_name = os.path.basename(os.path.dirname(file_path))
         if self.nb_classes == 4:
             label = {"CN": 0, "SMCI": 1, "PMCI": 2, "AD": 3}[class_name]
+        elif self.nb_classes == 2 and self.use_SP:
+            label = {"CN": 0, "SMCI": 0, "PMCI": 1, "AD": 1}[class_name]
         elif self.nb_classes == 2:
             label = {"CN": 0, "AD": 1}[class_name]
         return label
