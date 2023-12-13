@@ -15,22 +15,31 @@ def dataGenerator(data_dir, mode="train", nb_classes=4):
     if nb_classes == 4:
         PMCI = os.path.join(path, "PMCI")
         SMCI = os.path.join(path, "SMCI")
-    for file in os.listdir(AD):
-        if file.endswith(".nii.gz") and not file.endswith("-mask.nii.gz"):
-            set.append(os.path.join(AD, file))
-            labels.append(0)
-    for file in os.listdir(CN):
-        if file.endswith(".nii.gz") and not file.endswith("-mask.nii.gz"):
-            set.append(os.path.join(CN, file))
-            labels.append(1)
+    if nb_classes == 2:
+        for file in os.listdir(CN):
+            if file.endswith(".nii.gz") and not file.endswith("-mask.nii.gz"):
+                set.append(os.path.join(CN, file))
+                labels.append(0)
+        for file in os.listdir(AD):
+            if file.endswith(".nii.gz") and not file.endswith("-mask.nii.gz"):
+                set.append(os.path.join(AD, file))
+                labels.append(1)
     if nb_classes == 4:
+        for file in os.listdir(CN):
+            if file.endswith(".nii.gz") and not file.endswith("-mask.nii.gz"):
+                set.append(os.path.join(CN, file))
+                labels.append(0)
+        for file in os.listdir(SMCI):
+            if file.endswith(".nii.gz") and not file.endswith("-mask.nii.gz"):
+                set.append(os.path.join(SMCI, file))
+                labels.append(1)
         for file in os.listdir(PMCI):
             if file.endswith(".nii.gz") and not file.endswith("-mask.nii.gz"):
                 set.append(os.path.join(PMCI, file))
                 labels.append(2)
-        for file in os.listdir(SMCI):
+        for file in os.listdir(AD):
             if file.endswith(".nii.gz") and not file.endswith("-mask.nii.gz"):
-                set.append(os.path.join(SMCI, file))
+                set.append(os.path.join(AD, file))
                 labels.append(3)
 
     return set, labels
@@ -56,9 +65,12 @@ class NiiSequence(Sequence):
         self.nb_classes = nb_classes
         self.mode = mode
         self.data_aug = data_aug
+        self.nb_aug = 2
 
     def __len__(self):
-        return int(np.ceil(len(self.file_paths) / self.batch_size))
+        if not self.data_aug:
+            return int(np.ceil(len(self.file_paths) / self.batch_size))
+        return int(np.ceil(len(self.file_paths)*(self.nb_aug+1) / self.batch_size))
 
     def __getitem__(self, idx):
         batch_data, batch_labels = self.simplegetitem(idx)
@@ -66,18 +78,23 @@ class NiiSequence(Sequence):
         if not self.data_aug:
             return batch_data, batch_labels
         
-        num_aug = random.randint(0,2)
-        match num_aug:
-            case 1:
-                batch_data = add_gaussian_offset(batch_data.copy(), sigma=25)
-            case 2:
-                batch_data = add_gaussian_noise(batch_data.copy(), sigma=25)
+        batch_labels_base = batch_labels.copy()
+
+        batch_data1 = add_gaussian_offset(batch_data.copy(), sigma=25)
+        batch_labels = np.concatenate((batch_labels,batch_labels_base), axis=0)
+
+        batch_data2 = add_gaussian_noise(batch_data.copy(), sigma=25)
+        batch_data = np.concatenate((batch_data,batch_data1, batch_data2),axis=0)
+        batch_labels = np.concatenate((batch_labels,batch_labels_base), axis=0)
 
 
         return batch_data, batch_labels
 
     def simplegetitem(self, idx):
-        batch_paths = self.file_paths[idx * self.batch_size:(idx + 1) * self.batch_size]
+        if self.data_aug:
+            batch_paths = self.file_paths[int(idx * self.batch_size/(self.nb_aug+1)):int((idx + 1) * self.batch_size/(self.nb_aug+1))]
+        else :
+            batch_paths = self.file_paths[idx * self.batch_size:(idx + 1) * self.batch_size]
 
         batch_data = [self.load_and_preprocess(path) for path in batch_paths]
         batch_data = np.array(batch_data)
