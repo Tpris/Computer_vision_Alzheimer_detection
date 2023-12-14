@@ -5,6 +5,7 @@ import nibabel as nib
 from dltk.io.augmentation import *
 from dltk.io.preprocessing import *
 import random
+from monai.transforms import AdjustContrast, Affine, RandBiasField, ShiftIntensity, Rand3DElastic
 
 def dataGenerator(data_dir, mode="train", nb_classes=4):
     set = []
@@ -53,7 +54,7 @@ def dim_augmentation(data):
     return data
 
 class NiiSequence(Sequence):
-    def __init__(self, file_paths, batch_size, nb_classes=4, mode="full", shuffle=True, data_aug=False):
+    def __init__(self, file_paths, batch_size, nb_classes=4, mode="full", shuffle=True, data_aug=[]):
         assert mode in ["full", "HC", "reduced"], "mode must be either 'full', 'HC' or 'reduced'"
         assert nb_classes in [2, 4, 2.2], "nb_classes must be either 2, 4 or 2.2"
         self.file_paths = file_paths
@@ -67,7 +68,7 @@ class NiiSequence(Sequence):
             self.use_SP = True
         self.mode = mode
         self.data_aug = data_aug
-        self.nb_aug = 2
+        self.nb_aug = len(data_aug)
 
     def __len__(self):
         if not self.data_aug:
@@ -81,14 +82,48 @@ class NiiSequence(Sequence):
             return batch_data, batch_labels
         
         batch_labels_base = batch_labels.copy()
+        concat_batch = (batch_data,)
+        for name in self.data_aug:
+            match(name):
+                case 'gaussian_offset':
+                    noise = random.randint(5,15)
+                    batch_data1 = add_gaussian_offset(batch_data.copy(), sigma=noise)
+                    batch_labels = np.concatenate((batch_labels,batch_labels_base), axis=0)
+                    concat_batch += (batch_data1,)
+                case 'gaussian_noise':
+                    noise = random.randint(7,20)
+                    batch_data1 = add_gaussian_noise(batch_data.copy(), sigma=noise)
+                    batch_labels = np.concatenate((batch_labels,batch_labels_base), axis=0)
+                    concat_batch += (batch_data1,)
+                case 'adjustContrast':
+                    noise = random.random()
+                    adj = AdjustContrast(noise)
+                    im_b = adj(batch_data.copy())
+                    concat_batch += (im_b,)
+                    batch_labels = np.concatenate((batch_labels,batch_labels_base), axis=0)
+                case 'affine':
+                    aff = Affine()
+                    im_b = aff(batch_data.copy())
+                    concat_batch += (im_b,)
+                    batch_labels = np.concatenate((batch_labels,batch_labels_base), axis=0)
+                case 'randBiasField':
+                    bias = RandBiasField()
+                    im_b = bias(batch_data.copy())
+                    concat_batch += (im_b,)
+                    batch_labels = np.concatenate((batch_labels,batch_labels_base), axis=0)
+                case 'shiftIntensity': 
+                    noise = random.randint(5,30)
+                    intens = ShiftIntensity(noise)
+                    im_b = intens(batch_data.copy())
+                    concat_batch += (im_b,)
+                    batch_labels = np.concatenate((batch_labels,batch_labels_base), axis=0)
+                case 'rand3DElastic':
+                    el = Rand3DElastic((50,100),(50,1000), prob=1.0)
+                    im_b = el(batch_data.copy())
+                    concat_batch += (im_b,)
+                    batch_labels = np.concatenate((batch_labels,batch_labels_base), axis=0)
 
-        batch_data1 = add_gaussian_offset(batch_data.copy(), sigma=25)
-        batch_labels = np.concatenate((batch_labels,batch_labels_base), axis=0)
-
-        batch_data2 = add_gaussian_noise(batch_data.copy(), sigma=25)
-        batch_data = np.concatenate((batch_data,batch_data1, batch_data2),axis=0)
-        batch_labels = np.concatenate((batch_labels,batch_labels_base), axis=0)
-
+        batch_data = np.concatenate(concat_batch,axis=0)
 
         return batch_data, batch_labels
 
