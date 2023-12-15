@@ -5,7 +5,7 @@ import nibabel as nib
 from dltk.io.augmentation import *
 from dltk.io.preprocessing import *
 import random
-from monai.transforms import AdjustContrast, Affine, RandBiasField, ShiftIntensity, Rand3DElastic
+from monai.transforms import AdjustContrast, RandBiasField, ShiftIntensity, Rand3DElastic
 
 def dataGenerator(data_dir, mode="train", nb_classes=4):
     set = []
@@ -101,15 +101,13 @@ class NiiSequence(Sequence):
                     im_b = adj(batch_data.copy())
                     concat_batch += (im_b,)
                     batch_labels = np.concatenate((batch_labels,batch_labels_base), axis=0)
-                case 'affine':
-                    aff = Affine()
-                    im_b = aff(batch_data.copy())
-                    concat_batch += (im_b,)
-                    batch_labels = np.concatenate((batch_labels,batch_labels_base), axis=0)
                 case 'randBiasField':
                     bias = RandBiasField()
-                    im_b = bias(batch_data.copy())
-                    concat_batch += (im_b,)
+                    concat_one = []
+                    for data in batch_data.copy():
+                        im_b = bias(data)
+                        concat_one += [im_b]
+                    concat_batch += (np.array(concat_one),)
                     batch_labels = np.concatenate((batch_labels,batch_labels_base), axis=0)
                 case 'shiftIntensity': 
                     noise = random.randint(5,30)
@@ -119,8 +117,11 @@ class NiiSequence(Sequence):
                     batch_labels = np.concatenate((batch_labels,batch_labels_base), axis=0)
                 case 'rand3DElastic':
                     el = Rand3DElastic((50,100),(50,1000), prob=1.0)
-                    im_b = el(batch_data.copy())
-                    concat_batch += (im_b,)
+                    concat_one = []
+                    for data in batch_data.copy():
+                        im_b = el(data)
+                        concat_one += [im_b]
+                    concat_batch += (np.array(concat_one),)
                     batch_labels = np.concatenate((batch_labels,batch_labels_base), axis=0)
 
         batch_data = np.concatenate(concat_batch,axis=0)
