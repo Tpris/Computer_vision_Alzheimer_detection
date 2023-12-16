@@ -53,7 +53,7 @@ def run_first_exp():
         metrics=['accuracy'],
     )
 
-    filepath="experiences/classifier3D_bi-exp1-{epoch:02d}-{val_accuracy:.2f}"
+    filepath="experiences_2/classifier3D_bi-exp1-{epoch:02d}-{val_accuracy:.2f}"
     checkpoint = ModelCheckpoint(filepath, monitor='val_accuracy', verbose=1, save_best_only=True, mode='max')
     early_stop = EarlyStopping(monitor='val_accuracy', patience=10, verbose=1)
     reduce_lr = ReduceLROnPlateau(monitor='val_accuracy', factor=0.1, patience=5, verbose=1)
@@ -65,7 +65,7 @@ def run_first_exp():
         validation_data=val_sequence,
         validation_steps=len(val_set) // batch_size,
         callbacks=callbacks_list,
-        epochs=5,
+        epochs=10,
     )
 
     fig, ax = plt.subplots(1, 2, figsize=(20, 3))
@@ -128,7 +128,7 @@ def run_second_exp():
         metrics=['accuracy'],
     )
 
-    filepath="experiences/classifier3D_bi-exp2-{epoch:02d}-{val_accuracy:.2f}"
+    filepath="experiences_2/classifier3D_bi-exp2-{epoch:02d}-{val_accuracy:.2f}"
     checkpoint = ModelCheckpoint(filepath, monitor='val_accuracy', verbose=1, save_best_only=True, mode='max')
     early_stop = EarlyStopping(monitor='val_accuracy', patience=10, verbose=1)
     reduce_lr = ReduceLROnPlateau(monitor='val_accuracy', factor=0.1, patience=5, verbose=1)
@@ -140,7 +140,7 @@ def run_second_exp():
         validation_data=val_sequence,
         validation_steps=len(val_set) // batch_size,
         callbacks=callbacks_list,
-        epochs=5,
+        epochs=10,
     )
 
     y = model.predict(test_sequence)
@@ -180,7 +180,7 @@ def run_third_exp():
         metrics=['accuracy'],
     )
 
-    filepath="experiences/classifier3D_bi-exp3-{epoch:02d}-{val_accuracy:.2f}"
+    filepath="experiences_2/classifier3D_bi-exp3-{epoch:02d}-{val_accuracy:.2f}"
     checkpoint = ModelCheckpoint(filepath, monitor='val_accuracy', verbose=1, save_best_only=True, mode='max')
     early_stop = EarlyStopping(monitor='val_accuracy', patience=10, verbose=1)
     reduce_lr = ReduceLROnPlateau(monitor='val_accuracy', factor=0.1, patience=5, verbose=1)
@@ -192,7 +192,7 @@ def run_third_exp():
         validation_data=val_sequence,
         validation_steps=len(val_set) // batch_size,
         callbacks=callbacks_list,
-        epochs=5,
+        epochs=10,
     )
 
     fig, ax = plt.subplots(1, 2, figsize=(20, 3))
@@ -226,6 +226,6 @@ def run_third_exp():
 
 if __name__ == "__main__":
     print("Num GPUs Available: ", len(tf.config.list_physical_devices('GPU')))
-    # run_first_exp()
-    # run_second_exp()
+    run_first_exp()
+    run_second_exp()
     run_third_exp()

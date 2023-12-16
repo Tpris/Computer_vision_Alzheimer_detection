@@ -20,6 +20,8 @@ from sklearn.model_selection import train_test_split
 
 from src.arrange_dataset import arrange_dataset
 
+import pandas as pd
+
 
 def run_first_test():
     print("RUNNING TEST 1")
@@ -38,19 +40,31 @@ def run_first_test():
     batch_size = 16
     sp_sequence = NiiSequence2(new_set, new_labels, batch_size, nb_classes=2, mode="HC", shuffle=False)
 
+    len_set = len(new_set)
     print("Length of the dataset:",len(new_set))
 
 
     print("Loading model")
-    model = tf.keras.models.load_model("experiences/classifier3D_bi-exp1-04-0.81")
+    #model = tf.keras.models.load_model("experiences_1/classifier3D_bi-exp1-04-0.81")
+    model = tf.keras.models.load_model("experiences_2/classifier3D_bi-exp1-08-0.81")
     print("Model loaded")
 
 
     y = model.predict(sp_sequence)
     y_pred = y.argmax(axis=1)
     y_test = np.array(new_labels)
+    #accuracy
     accuracy = np.sum(y_pred == y_test)/len(y_pred)
     print("Accuracy for recognizing SMCI from PMCI is:", accuracy)
+    #precision
+    precision = np.sum(y_pred[y_test==0]==0)/np.sum(y_pred==0)
+    print("Precision for recognizing SMCI from PMCI is:", precision)
+    #recall
+    recall = np.sum(y_pred[y_test==0]==0)/np.sum(y_test==0)
+    print("Recall for recognizing SMCI from PMCI is:", recall)
+    #f1
+    f1 = 2*(precision*recall)/(precision+recall)
+    print("F1 for recognizing SMCI from PMCI is:", f1)
 
     cm = confusion_matrix(y_test, y_pred)
     cm_ = cm / cm.astype(float).sum(axis=1) * 100
@@ -61,9 +75,10 @@ def run_first_test():
     ax.set_title('Confusion Matrix')
     ax.xaxis.set_ticklabels(['SMCI', 'PMCI'])
     ax.yaxis.set_ticklabels(['SMCI', 'PMCI'])
-    plt.savefig("experiences/confusion_matrix_exp1.png")
+    plt.savefig("experiences_2/confusion_matrix_exp1.png")
     plt.show()
-    return accuracy
+
+    return len_set, accuracy, precision, recall, f1
 
 
 def run_second_test():
@@ -77,7 +92,8 @@ def run_second_test():
     print("Length of the dataset:",len(set_SP))
 
     print("Loading model")
-    model = tf.keras.models.load_model("experiences/classifier3D_bi-exp2-02-0.54")
+    #model = tf.keras.models.load_model("experiences_1/classifier3D_bi-exp2-02-0.54")
+    model = tf.keras.models.load_model("experiences_2/classifier3D_bi-exp1-08-0.81")
     print("Model loaded")
 
     y = model.predict(test_sequence)
@@ -95,7 +111,7 @@ def run_second_test():
     ax.set_title('Confusion Matrix')
     ax.xaxis.set_ticklabels(['CN', 'SMCI', 'PMCI', 'AD'])
     ax.yaxis.set_ticklabels(['CN', 'SMCI', 'PMCI', 'AD'])
-    plt.savefig("experiences/confusion_matrix_exp2_1.png")
+    plt.savefig("experiences_2/confusion_matrix_exp2_1.png")
     plt.show()
 
 
@@ -109,6 +125,7 @@ def run_second_test():
             new_set.append(p)
             new_labels.append(1)
 
+    len_test = len(new_set)
     batch_size = 16
     sp_sequence = NiiSequence2(new_set, new_labels, batch_size, nb_classes=2, mode="HC", shuffle=False)
     print("Length of the dataset:",len(new_set))
@@ -121,8 +138,18 @@ def run_second_test():
         elif y_pred[i] == 2 or y_pred[i] == 3:
             y_pred[i] = 1
     y_test = np.array(new_labels)
+    #accuracy
     accuracy1 = np.sum(y_pred == y_test)/len(y_pred)
     print("Accuracy for recognizing SMCI from PMCI is:", accuracy1)
+    #precision
+    precision = np.sum(y_pred[y_test==0]==0)/np.sum(y_pred==0)
+    print("Precision for recognizing SMCI from PMCI is:", precision)
+    #recall
+    recall = np.sum(y_pred[y_test==0]==0)/np.sum(y_test==0)
+    print("Recall for recognizing SMCI from PMCI is:", recall)
+    #f1
+    f1 = 2*(precision*recall)/(precision+recall)
+    print("F1 for recognizing SMCI from PMCI is:", f1)
 
     cm = confusion_matrix(y_test, y_pred)
     cm_ = cm / cm.astype(float).sum(axis=1) * 100
@@ -133,10 +160,10 @@ def run_second_test():
     ax.set_title('Confusion Matrix')
     ax.xaxis.set_ticklabels(['SMCI', 'PMCI'])
     ax.yaxis.set_ticklabels(['SMCI', 'PMCI'])
-    plt.savefig("experiences/confusion_matrix_exp2_2.png")
+    plt.savefig("experiences_2/confusion_matrix_exp2_2.png")
     plt.show()
 
-    return accuracy, accuracy1
+    return len_test, accuracy1, precision, recall, f1
 
 
 def run_third_test():
@@ -154,20 +181,32 @@ def run_third_test():
             new_set.append(p)
             new_labels.append(1)
 
+    len_test = len(new_set)
     batch_size = 16
     sp_sequence = NiiSequence2(new_set, new_labels, batch_size, nb_classes=2, mode="HC", shuffle=False)
     print("Length of the dataset:",len(new_set))
 
     print("Loading model")
-    model = tf.keras.models.load_model("experiences/classifier3D_bi-exp3-03-0.83")
+    #model = tf.keras.models.load_model("experiences_1/classifier3D_bi-exp3-03-0.83")
+    model = tf.keras.models.load_model("experiences_2/classifier3D_bi-exp1-08-0.81")
     print("Model loaded")
 
 
     y = model.predict(sp_sequence)
     y_pred = y.argmax(axis=1)
     y_test = np.array(new_labels)
-    accuracy1 = np.sum(y_pred == y_test)/len(y_pred)
-    print("Accuracy for recognizing SMCI from PMCI is:", accuracy1)
+    #accuracy
+    accuracy = np.sum(y_pred == y_test)/len(y_pred)
+    print("Accuracy for recognizing SMCI from PMCI is:", accuracy)
+    #precision
+    precision = np.sum(y_pred[y_test==0]==0)/np.sum(y_pred==0)
+    print("Precision for recognizing SMCI from PMCI is:", precision)
+    #recall
+    recall = np.sum(y_pred[y_test==0]==0)/np.sum(y_test==0)
+    print("Recall for recognizing SMCI from PMCI is:", recall)
+    #f1
+    f1 = 2*(precision*recall)/(precision+recall)
+    print("F1 for recognizing SMCI from PMCI is:", f1)
 
     cm = confusion_matrix(y_test, y_pred)
     cm_ = cm / cm.astype(float).sum(axis=1) * 100
@@ -178,12 +217,36 @@ def run_third_test():
     ax.set_title('Confusion Matrix')
     ax.xaxis.set_ticklabels(['SMCI', 'PMCI'])
     ax.yaxis.set_ticklabels(['SMCI', 'PMCI'])
-    plt.savefig("experiences/confusion_matrix_exp3.png")
+    plt.savefig("experiences_2/confusion_matrix_exp3.png")
     plt.show()
 
-    return accuracy1
+    return len_test, accuracy, precision, recall, f1
 
 if __name__ == "__main__":
-    # acc1 = run_first_test()
-    # run_second_test()
-    run_third_test()
+    methods = ["CN + AD", "4 classes", "CN - SMCI + AD - PMCI"]
+    len_sets = []
+    accuracies = []
+    precisions = []
+    recalls = []
+    f1s = []
+    lt, acc, pre, rec, f1 = run_first_test()
+    len_sets.append(lt)
+    accuracies.append(acc)
+    precisions.append(pre)
+    recalls.append(rec)
+    f1s.append(f1)
+    lt, acc, pre, rec, f1 = run_second_test()
+    len_sets.append(lt)
+    accuracies.append(acc)
+    precisions.append(pre)
+    recalls.append(rec)
+    f1s.append(f1)
+    lt, acc, pre, rec, f1 = run_third_test()
+    len_sets.append(lt)
+    accuracies.append(acc)
+    precisions.append(pre)
+    recalls.append(rec)
+    f1s.append(f1)
+    df = pd.DataFrame(list(zip(methods, len_sets, accuracies, precisions, recalls, f1s)), columns =['Method', 'Test set length', 'Accuracy', 'Precision', 'Recall', 'F1'])
+    df.to_csv("experiences_2/results_test.csv", index=False)
+    print(df)
